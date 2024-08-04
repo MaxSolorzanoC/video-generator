@@ -1,7 +1,6 @@
 "use client"
 
 import * as z from 'zod';
-import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -26,6 +25,8 @@ export default function Home() {
   })
 
   const onSubmit = async (values: z.infer<typeof formSchena> ) => {
+    setDisabled(true)
+    //Generate a video script of type string
     try {
       const res = await fetch('/api/generateVideo', {
         method: 'POST',
@@ -36,10 +37,12 @@ export default function Home() {
     } catch (error) {
       console.error('Error:', error);
     }
+    setDisabled(false)
   }
 
   const handleGenerateAudio = async (values: z.infer<typeof formSchena> ) => {
     setDisabled(true)
+    //Generate an audio using replicate
     try {
       const response = await fetch("/api/generateAudio", {
         method: "POST",
@@ -53,8 +56,28 @@ export default function Home() {
         throw new Error('Failed to fetch audio data');
       }
       const data = await response.json();
-      console.log(data)
-      setAudioUrl(data)
+      //Download the audio file returned by replicate and save it inside the /temp folder
+      try {
+        const response = await fetch("/api/downloadAudio", {
+          method: "POST",
+          body: JSON.stringify({
+            videoUrl: data,
+            outputFileName: "1.mp3"
+          })
+        });
+
+        if(!response.ok) {
+          throw new Error('Failed to download audio');
+        }
+
+        const path = await response.json();
+
+        console.log(path)
+        // setAudioUrl(path)
+      } catch(error) {
+        console.log(error)
+      }
+      
     } catch(error) {
       console.log(error)
     }
@@ -65,7 +88,7 @@ export default function Home() {
     <main>
       <h1>Create a youtube video by a prompt</h1>
       <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleGenerateAudio)}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
       <FormField 
         name="prompt"
         render={({ field }) => (

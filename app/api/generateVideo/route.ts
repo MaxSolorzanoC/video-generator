@@ -18,9 +18,10 @@ const countWords = (text: string) => {
 
 
 function divideScriptByParagraphs(script: string): string[] {
+  console.log(script)
   // Split the script into an array of paragraphs by newlines
   const paragraphs = script.split(/\n+/).filter(paragraph => paragraph.trim() !== '');
-
+  console.log(paragraphs)
   return paragraphs;
 }
 
@@ -46,21 +47,23 @@ export async function POST(req: NextRequest) {
    const model = openai('gpt-4o-mini')
 
   //  //Generate script
-    const script = await generateText({
+  console.log(prompt)
+    const response = await generateText({
         model,
         prompt: `Generate a concise video script covering the key points of the topic. The script should only include the content to be read in the voiceover, don't include scene descriptions. The topic is: ${prompt}`,
         tools: {
-            wordCounter: tool({
-              description: 'Count the number of words in a string',
-              parameters: z.object({
-                text: z.string().describe('The text to which we want to count its words'),
-              }),
-              execute: async ({ text }) => ({
-                text,
-                wordCount: countWords(text)
-              }),
+          wordCounter: tool({
+            description: 'Count the number of words in a string',
+            parameters: z.object({
+              text: z.string().describe('The text to which we want to count its words'),
             }),
-          },
+            execute: async ({ text }) => ({
+              text,
+              wordCount: countWords(text)
+            }),
+          }),
+        },
+        toolChoice: "auto",
     });
 
   //   const snippetsSchema = z.object({
@@ -89,15 +92,16 @@ export async function POST(req: NextRequest) {
   //       //     }),
   //       //   },
   //   });  
-  const paragraphs = divideScriptByParagraphs(script.text)
+  // const paragraphs = divideScriptByParagraphs(response.text)
+console.log(response)
 
-  const snippetsSchema = z.array(z.object({
-    script: z.string(),
-    duration: z.number(),
-    prompt: z.string(),
-  }))
+  // const snippetsSchema = z.array(z.object({
+  //   script: z.string(),
+  //   duration: z.number(),
+  //   prompt: z.string(),
+  // }))
 
-  let vidoeSnippets: z.infer <typeof snippetsSchema>;
+  // let vidoeSnippets: z.infer <typeof snippetsSchema>;
 
-  return NextResponse.json({ response: paragraphs }, { status: 200 });
+  return NextResponse.json(response, { status: 200 });
 }

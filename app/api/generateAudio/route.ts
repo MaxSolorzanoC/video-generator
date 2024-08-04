@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
       "adirik/styletts2:989cb5ea6d2401314eb30685740cb9f6fd1c9001b8940659b406f952837ab5ac", 
       { 
         input: {
-          text: prompt
+          text: prompt,
+          embedding_scale: 0.5,
         } 
       }
     );
