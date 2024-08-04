@@ -8,10 +8,12 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from 'react';
+import { divideByParagraphs } from '@/lib/divide-paragraphs';
 
 export default function Home() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [disabled, setDisabled] = useState<boolean>(false)
+  const [disabled, setDisabled] = useState<boolean>(false);
+  // const [script, setScript] = useState<string | null>(null);
 
   const formSchena = z.object({
     prompt: z.string().min(1)
@@ -26,17 +28,24 @@ export default function Home() {
 
   const onSubmit = async (values: z.infer<typeof formSchena> ) => {
     setDisabled(true)
-    //Generate a video script of type string
+
+    //Generate script
     try {
-      const res = await fetch('/api/generateVideo', {
+      const response = await fetch('/api/generateScript', {
         method: 'POST',
         body: JSON.stringify(values.prompt),
       })
-      const data = await res.json();
-      console.log(data)
-    } catch (error) {
-      console.error('Error:', error);
+
+      const script = await response.json();
+
+      //Divide script by paragraphs
+      const paragraphs = divideByParagraphs(script);
+
+      console.log(paragraphs)
+    } catch(err) {
+      console.log(err)
     }
+
     setDisabled(false)
   }
 

@@ -22,6 +22,5 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    console.log(output);
     return NextResponse.json(output);
 }

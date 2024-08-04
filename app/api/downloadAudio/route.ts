@@ -23,7 +23,7 @@ export async function POST(req: Request): Promise<Response> {
 
     // Create a unique filename for the downloaded video
     // const tempFileName = `video_${uuidv4()}.mp3`;
-    const outputFilePath = path.join('./temp', outputFileName);
+    const outputFilePath = path.join('./audios', outputFileName);
 
     // Download the video using wget
     await new Promise<string>((resolve, reject) => {
@@ -32,7 +32,6 @@ export async function POST(req: Request): Promise<Response> {
           console.error(`Error downloading ${videoUrl}:`, stderr);
           reject(stderr);
         } else {
-          console.log(`Downloaded ${videoUrl} to ${outputFilePath}`);
           resolve(outputFilePath);
         }
       });
