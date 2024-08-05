@@ -40,13 +40,18 @@ export default function Home() {
 
       //Divide script by paragraphs
       const paragraphs = divideByParagraphs(script);
+      
+      const audio = await fetch("/api/generateAudio", {
+        method: "POST",
+        body: JSON.stringify(paragraphs)
+      });
+      console.log(await audio.json())
 
-      console.log(paragraphs)
+      setDisabled(false)
     } catch(err) {
       console.log(err)
     }
 
-    setDisabled(false)
   }
 
   const handleGenerateAudio = async (values: z.infer<typeof formSchena> ) => {

@@ -5,22 +5,35 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-export async function POST(req: NextRequest) {
-    const prompt = await req.json();
+async function generateAudio(prompt: string) {
+  try {
+      const output = await replicate.run(
+        "lee101/guided-text-to-speech:fc0617a394340824a7dd1aa78f76e92c061449abd48e67ee9dbe30a6448c8be2", 
+        { 
+          input: {
+            voice: 'A male speaker with a veri motivating voice, expresses a lot of emotions and catches the user attention.',
+            prompt,
+          } 
+        }
+      );
+      console.log("Generated audio:", output);
+      return output;
+      // Do something with the output, such as saving the audio file
+  } catch (error) {
+      console.error("Error generating audio:", error);
+  }
+}
 
-    if (!prompt) {
+export async function POST(req: NextRequest) {
+    const paragraphs = await req.json();
+
+    if (!paragraphs) {
         throw new Error('Missing input field in the request body')
     }
 
-    const output = await replicate.run(
-      "adirik/styletts2:989cb5ea6d2401314eb30685740cb9f6fd1c9001b8940659b406f952837ab5ac", 
-      { 
-        input: {
-          text: prompt,
-          embedding_scale: 0.5,
-        } 
-      }
-    );
+    for (let i = 0; i < paragraphs.length; i++) {
+      await generateAudio(paragraphs[i])
+    }
 
-    return NextResponse.json(output);
+    return NextResponse.json({paragraphs: paragraphs}, {status: 200});
 }
